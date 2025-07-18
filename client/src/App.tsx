@@ -1,7 +1,14 @@
+import { Route, Routes } from "react-router";
+import Welcome from "./pages/Welcome/Welcome.tsx";
+import Auth from "./pages/Auth/Auth.tsx";
+
 function App() {
   return (
     <>
-      <h1>Hello World</h1>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/auth" element={<Auth />} />
+      </Routes>
     </>
   );
 }

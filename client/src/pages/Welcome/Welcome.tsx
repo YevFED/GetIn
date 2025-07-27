@@ -1,7 +1,7 @@
-import React from "react";
 import styles from "./Weclome.module.scss";
 import Silk from "../../ui/background/Silk";
 import { Link } from "react-router-dom";
+
 const Welcome = () => {
   return (
     <>

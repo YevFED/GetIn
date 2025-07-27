@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import Silk from "../../ui/background/Silk";
 import styles from "./Auth.module.scss";
 import { AnimatePresence, motion } from "framer-motion";
+import axiosInstance from "../../axios/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import { useCheckToken } from "../../store/useCheckToken";
 
 // NOTE: Add const for squeare title , fix Problems !!!
 
@@ -14,6 +17,8 @@ const Auth = () => {
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
 
+  const [byUsername, setByUsername] = useState<boolean>(false);
+  const navigate = useNavigate();
   //   I know it's dump , but thats my all creativity
   const handleModeChange = () => {
     setTimeout(() => {
@@ -26,7 +31,7 @@ const Auth = () => {
       setLogin(!Login);
     }, 1200);
     setTimeout(() => {
-      setText(Login ? "Register" : "Login");
+      setText(Login ? "Register" : "Log in");
     }, 1200);
   };
 
@@ -42,6 +47,53 @@ const Auth = () => {
       <h2>{Text}</h2>
     </div>
   );
+
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const response = await axiosInstance.post("/api/auth/signup", {
+        username: username,
+        email: email,
+        password: password,
+      });
+
+      if (response.data && response.data.error) {
+        console.log(response.data.error.message);
+      }
+
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await axiosInstance.post("/api/auth/login", {
+        email: email,
+        password: password,
+        username: username,
+      });
+
+      if (response.data && response.data.error) {
+        console.log(response.data.error.message);
+      }
+
+      if (response.data.user && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        console.log(response.data.user + " Logined");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useCheckToken();
 
   return (
     <>
@@ -76,18 +128,37 @@ const Auth = () => {
               exit={{ opacity: 0, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <form className={styles.loginForm}>
+              <form className={styles.loginForm} onSubmit={handleLogin}>
                 <h2 className={styles.formTitle}>Welcome Back!</h2>
                 <div className={styles.formInputs}>
-                  <label className={styles.formlabel}>Email :</label>
-                  <input
-                    type="email"
-                    className={styles.formInput}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                    }}
-                  />
+                  {/* Changing byUsername or not */}
+
+                  {byUsername ? (
+                    <>
+                      <label className={styles.formlabel}>Username :</label>
+                      <input
+                        type="text"
+                        className={styles.formInput}
+                        value={username}
+                        onChange={(e) => {
+                          setUsername(e.target.value);
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <label className={styles.formlabel}>Email :</label>
+                      <input
+                        type="email"
+                        className={styles.formInput}
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                        }}
+                      />
+                    </>
+                  )}
+
                   <label className={styles.formlabel}>Password :</label>
                   <input
                     type="password"
@@ -98,9 +169,18 @@ const Auth = () => {
                     }}
                   />
                 </div>
-                <p className={styles.formChanger} onClick={handleModeChange}>
-                  Don't have account?
-                </p>
+                <div className={styles.formChangerInfo}>
+                  <p
+                    className={styles.formChanger}
+                    onClick={() => setByUsername(!byUsername)}
+                  >
+                    Log in by {byUsername ? "Email" : "Username"}
+                  </p>
+                  <p className={styles.formChanger} onClick={handleModeChange}>
+                    Don't have account?
+                  </p>
+                </div>
+
                 <button type="submit" className={styles.formButton}>
                   Let's Go!
                 </button>
@@ -131,12 +211,12 @@ const Auth = () => {
                 exit={{ opacity: 0, x: 100 }}
                 transition={{ duration: 0.6 }}
               >
-                <form className={styles.signupForm}>
+                <form className={styles.signupForm} onSubmit={handleSignUp}>
                   <h2 className={styles.formTitle}>Let's Sign up</h2>
                   <div className={styles.formInputs}>
                     <label className={styles.formlabel}>Username :</label>
                     <input
-                      type="email"
+                      type="text"
                       className={styles.formInput}
                       value={username}
                       onChange={(e) => {

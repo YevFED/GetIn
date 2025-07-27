@@ -4,9 +4,21 @@ import bcrypt from "bcrypt";
 import { createToken } from "../../middleware/createToken";
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, username } = req.body;
 
-  const user = await User.findOne({ email });
+  console.log(req.body);
+
+  const userEmail = await User.findOne({ email });
+  const userUsername = await User.findOne({ username });
+
+  const user: any = userEmail || userUsername;
+
+  if (!userEmail) {
+    user === userUsername;
+  } else {
+    user === userEmail;
+  }
+
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }

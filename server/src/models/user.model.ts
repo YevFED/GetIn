@@ -6,6 +6,7 @@ export interface isUser {
     username: string;
     email: string;
     password: string;
+    profileImg: string;
   };
 }
 
@@ -26,6 +27,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+  },
+  profileImg: {
+    type: String,
   },
 });
 
